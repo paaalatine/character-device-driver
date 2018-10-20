@@ -32,22 +32,23 @@ static int my_close(struct inode *i, struct file *f)
 
 static ssize_t my_read(struct file *f, char __user *buf, size_t len, loff_t *off)
 {
+	int ret;
 	mm_segment_t oldfs;
  	
  	printk(KERN_INFO "Driver: read()\n");
 
  	memset(device_buffer, 0, sizeof device_buffer);
 
-    oldfs = get_fs();
-    set_fs(get_ds());
+ 	oldfs = get_fs();
+ 	set_fs(get_ds());
 
-    vfs_read(wf, device_buffer, len, off);
+ 	ret = vfs_read(wf, device_buffer, len, off);
+ 	
+ 	set_fs(oldfs);
 
-    set_fs(oldfs);
+ 	printk(KERN_INFO "Driver: %s\n", device_buffer);
 
-    printk(KERN_INFO "Driver: %s\n", device_buffer);
-
- 	return 0;
+ 	return ret;
 }
 
 static ssize_t my_write(struct file *f, const char __user *buf, size_t len, loff_t *off)
